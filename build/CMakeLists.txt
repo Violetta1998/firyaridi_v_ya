@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(polevoy_d_v)
+project(firyaridi_v_ya)
 
 # Determine the platform
 # -----------------------------------------------------------------------
@@ -65,4 +65,5 @@ if(VER_SUFFIX)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO}.${VER_SUFFIX}")
 endif()
 
-add_subdirectory(prj)
+add_subdirectory(rational)
+add_subdirectory(complex)
