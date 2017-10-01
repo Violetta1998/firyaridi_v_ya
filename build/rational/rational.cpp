@@ -65,9 +65,23 @@ Rational exponentiation(Rational& rhs, double n) {
 	return Rational(pow(rhs.unit, n), pow(rhs.fract, n));
 }
 
-Rational rootExtraction() {
-
+int summDifferentTypes(Rational& rhs, int n) {
+	return static_cast<int>(rhs.unit) + n;
 }
+int summDifferentTypes(int n, Rational& rhs) {
+	return static_cast<int>(rhs.unit) + n;
+}
+
+double summDifferentTypes(double n, Rational& rhs) {
+	return static_cast<double>(rhs.unit) + n;
+}
+
+double summDifferentTypes(Rational& rhs, double n) {
+	return static_cast<double>(rhs.unit) + n;
+}
+/*Rational rootExtraction() {
+
+}*/
 
 
 std::ostream& Rational::writeTo(std::ostream& ostrm) const {

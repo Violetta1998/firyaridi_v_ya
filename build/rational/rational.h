@@ -37,6 +37,8 @@ struct Rational {
 
 Rational operator+(const Rational& ihs, const Rational& rhs);
 Rational operator-(const Rational& ihs, const Rational& rhs);
+Rational operator*(const Rational& ihs, const Rational& rhs);
+Rational operator/(const Rational& ihs, const Rational& rhs);
 
 inline std::ostream& operator<<(std::ostream& ostrm, const Rational& rhs) {
 	return rhs.writeTo(ostrm);

@@ -1,6 +1,36 @@
 #include "rational.h"
-#include "rational.cpp"
+#include <string>
+#include <sstream>
 
+
+Rational testPlusEqual(Rational z) {
+	using namespace std;
+	cout << "Test of +=   The number was:" << z << endl;
+	Rational plusEqual(z.unit += z.unit, z.fract += z.fract);
+	cout << "The result:" << plusEqual << endl;
+	return plusEqual;
+}
+Rational testMinusEqual(Rational z) {
+	using namespace std;
+	cout << "Test of -=   The number was:" << z << endl;
+	Rational minusEqual(z.unit -= z.unit, z.fract -= z.fract);
+	cout << "The result:" << minusEqual << endl;
+	return minusEqual;
+}
+Rational testDevideEqual(Rational z) {
+	using namespace std;
+	cout << "Test of /=   The number was:" << z << endl;
+	Rational devideEqual(z.unit /= z.unit, z.fract /= z.fract);
+	cout << "The result:" << devideEqual << endl;
+	return devideEqual;
+}
+Rational testMultiplyEqual(Rational z) {
+	using namespace std;
+	cout << "Test of *=   The number was:" << z << endl;
+	Rational multiplyEqual(z.unit *= z.unit, z.fract *= z.fract);
+	cout << "The result:" << multiplyEqual << endl;
+	return multiplyEqual;
+}
 bool testParse(const std::string& str) {
 	using namespace std;
 	istringstream istrm(str);
@@ -47,6 +77,28 @@ Rational testSumm(Rational z, Rational s) {
 	return summ;
 }
 
+Rational testExponentian(Rational a, double n) {
+	using namespace std;
+	cout << "Test of exponentiation number " << a << endl;
+	Rational exponent(pow(a.unit, n), pow(a.fract, n));
+	cout << " was exponented in " << n << " the result is: " << exponent << endl;
+	return exponent;
+}
+int testSummDifferentTypes(Rational a, int n) {
+	using namespace std;
+	cout << "Test summ of different types " << " First rational:  " << a << "Second int:  " << n << endl;
+	int result(static_cast<int>(a.unit) + n);
+	cout << "Result is " << result << endl;
+	return result;
+}
+
+int testSummDifferentTypesReversed(int n, Rational a) {
+	using namespace std;
+	cout << "Test summ of different types " << " First int:  " << n << " Second rational:  " << a << endl;
+	int result(static_cast<int>(a.unit) + n);
+	cout << "Result is " << result << endl;
+	return result;
+}
 int main() {
 	using namespace std;
 
