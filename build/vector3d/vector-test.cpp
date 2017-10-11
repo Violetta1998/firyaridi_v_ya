@@ -38,16 +38,18 @@ double testSkalarInterfacing(vector num1, vector num2) {
 
 double testVectorLength(vector num1) {
 	using namespace std;
-	double result(pow(pow(num1.x, 2), pow(num1.y, 2), pow(num1.z, 2), 0.5));
+	double x(pow(num1.x, 2) + pow(num1.y, 2) + pow(num1.z, 2));
+	double result(pow(x, 0.5));
 	cout << "The number was: " << num1 << " vector length is: " << result << endl;
 	return result;
 }
 
 double testVectorInterfacing(vector num1,vector num2, double corner) {
-	double num1 = pow(pow(num1.x, 2), pow(num1.y, 2), pow(num1.z, 2), 0.5);
-	double num2 = pow(pow(num2.x, 2), pow(num2.y, 2), pow(num2.z,2), 0.5);
+	using namespace std;
+	double a1 = pow((pow(num1.x, 2) + pow(num1.y, 2) + pow(num1.z, 2)), 0.5);
+	double a2 = pow((pow(num2.x, 2) + pow(num2.y, 2) + pow(num2.z,2)), 0.5);
 	double sinus = sin(corner);
-	double result(num1*num2*sinus);
+	double result(a1*a2*sinus);
 	cout << "The numbers were: " << num1 << "  " << num2 << " and the corner " << corner <<" result of vector interfacing: " << result << endl;
 	return result;
 
@@ -60,13 +62,13 @@ int main()
 	vector b(3.2, 4.7, 5.5);
 	cout << a << endl;
 
-	vector result(testDevideEqual(a));
-	vector result(testInterfacingEqual(a));
-	vector result(testSummEqual(a));
-	vector result(testMinusEqual(a));
-	vector result(testSummEqual(a));
-	vector result(testSkalarInterfacing(a, b));
-	vector result(testVectorInterfacing(a, b, 30));
-	vector result(testVectorLength(a));
+	vector result1(testDevideEqual(a));
+	vector result2(testInterfacingEqual(a));
+	vector result3(testSummEqual(a));
+	vector result4(testMinusEqual(a));
+	vector result5(testSummEqual(a));
+	double result6(testSkalarInterfacing(a, b));
+	double result7(testVectorInterfacing(a, b, 30));
+	double result8(testVectorLength(a));
 	return 0;
 }

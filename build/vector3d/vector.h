@@ -46,7 +46,6 @@ public:
 vector operator+(const vector num1, const vector num2);
 vector operator-(const vector num1, const vector num2);
 vector operator*(const vector num1, const vector num2);
-vector operator*(const vector num1,const vector num2, double corner);
 
 inline std::ostream& operator<<(std::ostream& ostrm, const vector& rhs)
 {
@@ -54,16 +53,10 @@ inline std::ostream& operator<<(std::ostream& ostrm, const vector& rhs)
 }
 
 
-//inline std::istream& operator>>(std::istream& istrm, vector& rhs) 
-//{
-//	return rhs.readFrom(istrm);
-//}
+/*inline std::istream& operator>>(std::istream& istrm, vector& rhs) 
+{
+	return rhs.readFrom(istrm);
+}*/
 
-
-
-std::ostream& vector::writeTo(std::ostream& ostrm) const {
-	ostrm << leftBrace << x << comma << y << z << rightBrace;
-	return ostrm;
-}
 
 #endif
