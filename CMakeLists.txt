@@ -67,3 +67,6 @@ endif()
 
 add_subdirectory(rational)
 add_subdirectory(complex)
+add_subdirectory(interval1d)
+add_subdirectory(vector3d)
+add_subdirectory(vector3dT)
