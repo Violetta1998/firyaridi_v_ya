@@ -4,6 +4,13 @@ StackL::StackL(const StackL & obj)
 {
 }
 
+StackL::~StackL()
+{
+	while (isEmpty) {
+		pop();
+	}
+}
+
 void StackL::push(const int & element)
 {
 	pHead_ = new Node(pHead_,element);

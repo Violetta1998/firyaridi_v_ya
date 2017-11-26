@@ -1,20 +1,17 @@
-#ifndef STACKL
-#define STACKL
 #include <cstddef>
+#ifndef QUEUE_P
 
-class StackL {
+class PriorityQueue {
 public:
-	StackL() = default;
-	StackL(const StackL& obj);
-	~StackL();
-
+	PriorityQueue()=default;
+	~PriorityQueue();
 	void push(const int& element);
 	void pop();
-	int& top();//?
+	int& top();
 	const int& top() const;
 	bool isEmpty() const;
-	void clear();//?
-
+	void clear();
+	
 private:
 	struct Node {
 		Node* pNext_{ nullptr };
@@ -28,6 +25,7 @@ private:
 		}
 	};
 	Node* pHead_{ nullptr };
+	Node* pTail_{ nullptr };
 };
 
-#endif
+#endif 
