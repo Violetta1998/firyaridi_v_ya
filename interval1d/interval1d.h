@@ -4,10 +4,6 @@
 
 struct interval1d {
 public:
-	double x1{ 0.0 };
-	double x2{ 0.0 };
-
-public:
 	interval1d() = default;
 	interval1d(const double _x1, const double _x2)
 		:x1(_x1),
@@ -27,11 +23,13 @@ public:
 	interval1d& operator*=(const interval1d& interval);
 	interval1d& operator/=(const interval1d& interval);
 
+private:
+	double x1{ 0.0 };
+	double x2{ 0.0 };
 };
 interval1d operator+(interval1d interval1, interval1d interval2);
 interval1d operator-(interval1d interval1, interval1d interval2);
 interval1d operator/(interval1d interval1, interval1d interval2);
-
 
 
 #endif

@@ -1,0 +1,2 @@
+project(priorityQueue)
+add_executable(priorityQueue priorityQueue.h priorityQueue.cpp priorityQueue_test.cpp)

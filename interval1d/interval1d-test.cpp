@@ -1,11 +1,13 @@
-/*#include "interval1d.h"
+#include "interval1d.h"
+#include <sstream>
 
-
-double intervalLength(interval1d interval) {
-	return (interval.x1 - interval.x2);
-}
+using namespace std;
 
 int main() {
 	interval1d interval(1.0, 5.0);
-	double length(intervalLength(interval));//4
-}*/
+	interval *= 5;
+	interval += 5;
+	interval -= 5;
+	interval /= 5;
+	return 0;
+}

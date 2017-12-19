@@ -1,0 +1,10 @@
+# CMake generation dependency list for this directory.
+C:/temp/proga/computerVision/CMakeLists.txt
+C:/Users/Виолетта/Desktop/opencv/build/OpenCVConfig-version.cmake
+C:/Users/Виолетта/Desktop/opencv/build/OpenCVConfig.cmake
+C:/Users/Виолетта/Desktop/opencv/build/x64/vc14/lib/OpenCVConfig.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageMessage.cmake
+C:/Users/Виолетта/Desktop/opencv/build/x64/vc14/lib/OpenCVModules.cmake
+C:/Users/Виолетта/Desktop/opencv/build/x64/vc14/lib/OpenCVModules-debug.cmake
+C:/Users/Виолетта/Desktop/opencv/build/x64/vc14/lib/OpenCVModules-release.cmake
