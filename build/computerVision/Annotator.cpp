@@ -33,41 +33,6 @@ public:
 	std::vector<string> filePaths;
 	vector<Mat> framesVideo;
 
-	void keyPressed(int key) {
-		switch (key) {
-			case 75: {
-			if (framesCount != 1) {
-					imshow(getWinName(), framesVideo[framesCount - 1]);
-					framesCount = framesCount - 1;
-					wait = waitKey(300000);
-				}
-			break;
-			}
-			case 77: {
-				if (framesVideo[framesCount].rows != 0) 
-			{
-					imshow(getWinName(), framesVideo[framesCount]);//настроить покадровый просмотр вперед (большая пауза?)
-					framesCount = framesCount + 1;
-					wait = waitKey(300000);
-			}
-				break;
-			}
-			case 115: 
-			{
-				wait = (char)waitKey(300000);
-				break;
-			}
-			case 50: {
-				wait = (char)waitKey(3000);
-				break;
-	     	}
-			case 27: {
-				break;
-			}
-				default:
-					break;
-		}
-	}
 private:
 	static void mouseCallback(int event, int x, int y, int, void* param)
 	{
@@ -110,31 +75,26 @@ private:
 int main(int argc, const char* argv[]) {
 	Annotator app;
 	app.readSettingsFromConfig();
+	app.createNewFile("cars.txt");
 	app.checkCoordinatesInFile();
-	/*cout << "Argument 0: " << argv[0] << endl;
-	cout << "Argument 1: "<<argv[1] << endl;
+	/*app.getVideoPaths(argv[1]);*/
 
-	app.getVideoPaths(argv[1]);
-	*/
 	string keys =
-		"{@video|x.mov|input video}";
+		"{@video|cars.avi|input video}";
 
 	/*for (int i = 0; i < argc; i++) {
-		
-	}*/
-
-	keys.insert(0, "{@video" + std::to_string(1) + "|y.mov|input video}");
-	keys.insert(0, "{@video" + std::to_string(2) + "|z.mov|input video}");
-
+		cout  << argv[i] << endl;
+	}
+*/
 	int countVideos=0;
 	CommandLineParser parser(argc, argv, keys);
 	string filename = parser.get<string>(countVideos);
 	
-	app.createNewFile("video1.txt");
 
 	printf("fileName: %s\n", filename.c_str());
 	VideoCapture capture(filename);
 	Mat frame;
+	char c, c2(0);
 
 	for (int i = 0; i < capture.get(CAP_PROP_FRAME_COUNT);i++) {
 		capture >> app.matImgG;
@@ -144,7 +104,6 @@ int main(int argc, const char* argv[]) {
 		app.insertFramesIntoVector(frame);
 		imshow(app.getWinName(), frame);
 
-		app.framesCount = capture.get(CAP_PROP_POS_FRAMES);
 		app.drawExistedTargets(app.matImgB);
 
 		if (capture.get(CAP_PROP_FRAME_COUNT) == i+1) {
@@ -155,23 +114,28 @@ int main(int argc, const char* argv[]) {
 			capture.open(filename);
 			i = 0;
 		}
-		char c = waitKey(30);
+		
+		if (c2 > 0) {
+			c = c2;
+			c2 = 0;
+		}
+		else c = waitKey(30);
 		
 		if (c > 0) {
 			if (c == 27) {
 				break;
 			}
 			if ('s' == c) {
-				waitKey(30000);
+				c2 = waitKey(300000);
 			}
 			if ('f' == c) {
-				waitKey(30);
+				c2 = waitKey(30);
 			}
 			if ('1' == c) {
 				if (app.framesCount != 1) {
-					imshow(app.getWinName(), app.framesVideo[app.framesCount - 1]);
+					app.drawExistedTargets(app.framesVideo[app.framesCount - 1]);
 					app.framesCount = app.framesCount - 1;
-					waitKey(30000);
+					c2 = waitKey(30000);
 				}
 			}
 			if ('2' == c) {
@@ -179,11 +143,11 @@ int main(int argc, const char* argv[]) {
 				{
 					imshow(app.getWinName(), app.framesVideo[app.framesCount]);
 					app.framesCount = app.framesCount + 1;
-					waitKey(300000);
+					c2 = waitKey(30000);
 				}
 			}
 		}
-		
+		if(c<0) app.framesCount = capture.get(CAP_PROP_POS_FRAMES);
 	}
 
 	capture.release();
@@ -205,7 +169,7 @@ Annotator::Annotator()
 	windowName("target video"),
 	wait((char)waitKey(30000))
 {
-	namedWindow(windowName, 1);
+	namedWindow(windowName, CV_WINDOW_KEEPRATIO);
 	setMouseCallback(windowName, mouseCallback, this);
 }
 
