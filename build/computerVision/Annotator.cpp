@@ -28,6 +28,8 @@ public:
 	void getVideoPaths(string pathToFile);
 	cv::Mat3b matImgG;
 	cv::Mat3b matImgB;
+	string keys;
+	int countVideosNumber;
 	double framesCount;
 	char wait;
 	std::vector<string> filePaths;
@@ -61,7 +63,6 @@ private:
 	}
 private:
 	String windowName;
-	static String fileName;
 	ofstream file;
 	ifstream rFile;
 	ofstream configFile;
@@ -75,23 +76,17 @@ private:
 int main(int argc, const char* argv[]) {
 	Annotator app;
 	app.readSettingsFromConfig();
-	app.createNewFile("cars.txt");
-	app.checkCoordinatesInFile();
-	/*app.getVideoPaths(argv[1]);*/
-
-	string keys =
-		"{@video|cars.avi|input video}";
-
-	/*for (int i = 0; i < argc; i++) {
-		cout  << argv[i] << endl;
-	}
-*/
-	int countVideos=0;
-	CommandLineParser parser(argc, argv, keys);
+	app.getVideoPaths("C:\\temp\\proga\\bin.win64.vc2015.dbg\\paths.txt");//argv[1]
+	int countVideos = 0;
+	CommandLineParser parser(argc, argv, app.keys);
 	string filename = parser.get<string>(countVideos);
+	std::size_t found = filename.find_last_of("/\\");
+	string name = filename.substr(found + 1);
 	
+	app.checkCoordinatesInFile();
+	app.createNewFile(name+".txt");
 
-	printf("fileName: %s\n", filename.c_str());
+	printf("fileName: %s\n", name.c_str());
 	VideoCapture capture(filename);
 	Mat frame;
 	char c, c2(0);
@@ -108,11 +103,16 @@ int main(int argc, const char* argv[]) {
 
 		if (capture.get(CAP_PROP_FRAME_COUNT) == i+1) {
 			countVideos++;
-			filename = parser.get<string>(countVideos);//берем следующее видео
-			printf("fileName: %s\n", filename.c_str());
-			app.createNewFile(filename.c_str());//создаем новый файл для точек
-			capture.open(filename);
-			i = 0;
+			if (app.countVideosNumber <= countVideos) break;
+			else {
+				filename = parser.get<string>(countVideos);//берем следующее видео
+				found = filename.find_last_of("/\\");
+				name = filename.substr(found + 1);
+				printf("fileName: %s\n", name.c_str());
+				app.createNewFile(name + ".txt");
+				capture.open(filename);
+				i = 0;
+			}
 		}
 		
 		if (c2 > 0) {
@@ -167,7 +167,8 @@ Annotator::Annotator()
 	matImgG(100, 100),
 	matImgB(100, 100),
 	windowName("target video"),
-	wait((char)waitKey(30000))
+	wait((char)waitKey(30000)),
+	countVideosNumber(0)
 {
 	namedWindow(windowName, CV_WINDOW_KEEPRATIO);
 	setMouseCallback(windowName, mouseCallback, this);
@@ -301,7 +302,25 @@ void Annotator::readSettingsFromConfig()
 
 void Annotator::getVideoPaths(string pathToFile)
 {
-	ifstream filePaths;
-	filePaths.open(pathToFile, ios_base::in);
+	ifstream filePathsR;
+	ofstream filePaths;
+	string s;
+	string k;
+	string name;
+	string path;
+	std::size_t found;
+	filePaths.open(pathToFile, ios_base::app);
+	filePathsR.open(pathToFile, ios_base::in);
+	while (!filePathsR.eof()) {
+		filePathsR >> s;
+		found = s.find_last_of("/\\");
+		name = s.substr(found + 1);
+		keys.insert(0, "{@" + name + "|" + s + " |input video}");
+		countVideosNumber++;
+		getline(filePathsR, s, '\n');
+	}
+	filePaths.close();
+	filePathsR.close();
+
 }
 
