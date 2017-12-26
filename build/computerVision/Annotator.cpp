@@ -8,36 +8,66 @@
 #include <iostream>
 #include <conio.h>
 #include <stdio.h>
+#include <thread>
 
 using namespace std;
 using namespace cv;
 
 class Annotator {
 public:
-	Annotator()
-		:circleRadius(10),
-		rectRadius(20),
-		file(fileName,ios_base::app),
-		rFile(fileName, ios_base::in),
-		coordMass(2),
-		framesCount(0.0),
-		matImg(100, 100),
-		windowName("target video"),
-		wait((char)waitKey(30000))
-	{
-		namedWindow(windowName, 1);
-		setMouseCallback(windowName, mouseCallback, this);
-	}
+	Annotator();
 	~Annotator() = default;
 	void drawTarget(const Mat& img, int x, int y, int radius);
 	void deleteTarget(const Mat& img, int x, int y, int radius);
 	void drawExistedTargets(const Mat& img);
 	string getWinName();
+	void createNewFile(string name);
 	void checkCoordinatesInFile();
-	cv::Mat3b matImg;
+	void insertFramesIntoVector(Mat& img);
+	void readSettingsFromConfig();
+	void getVideoPaths(string pathToFile);
+	cv::Mat3b matImgG;
+	cv::Mat3b matImgB;
 	double framesCount;
 	char wait;
+	std::vector<string> filePaths;
+	vector<Mat> framesVideo;
 
+	void keyPressed(int key) {
+		switch (key) {
+			case 75: {
+			if (framesCount != 1) {
+					imshow(getWinName(), framesVideo[framesCount - 1]);
+					framesCount = framesCount - 1;
+					wait = waitKey(300000);
+				}
+			break;
+			}
+			case 77: {
+				if (framesVideo[framesCount].rows != 0) 
+			{
+					imshow(getWinName(), framesVideo[framesCount]);//настроить покадровый просмотр вперед (большая пауза?)
+					framesCount = framesCount + 1;
+					wait = waitKey(300000);
+			}
+				break;
+			}
+			case 115: 
+			{
+				wait = (char)waitKey(300000);
+				break;
+			}
+			case 50: {
+				wait = (char)waitKey(3000);
+				break;
+	     	}
+			case 27: {
+				break;
+			}
+				default:
+					break;
+		}
+	}
 private:
 	static void mouseCallback(int event, int x, int y, int, void* param)
 	{
@@ -48,7 +78,7 @@ private:
 				break;
 			case EVENT_LBUTTONDOWN:
 			{
-				app.drawTarget(app.matImg, x, y, app.circleRadius);
+				app.drawTarget(app.matImgG, x, y, app.circleRadius);
 			}
 
 			case CV_EVENT_LBUTTONUP:
@@ -56,8 +86,9 @@ private:
 
 			case CV_EVENT_RBUTTONDOWN:
 			{
-				app.deleteTarget(app.matImg, x, y, app.rectRadius);
+				app.deleteTarget(app.matImgG, x, y, app.delRadius);
 			}
+
 			default:
 				break;
 			}
@@ -68,80 +99,136 @@ private:
 	static String fileName;
 	ofstream file;
 	ifstream rFile;
+	ofstream configFile;
+	ifstream configFileR;
 	std::vector<int> coordMass;
 	int circleRadius;
-	int rectRadius;
+	int delRadius;
 };
 
-String Annotator::fileName("targetCoordinates.txt");
 
 int main(int argc, const char* argv[]) {
 	Annotator app;
+	app.readSettingsFromConfig();
 	app.checkCoordinatesInFile();
-	const string keys =
-		"{@video1|Donate.mov| input video}"
-		"{@video2|Vesh.mov| input video}"
-		"{@message|none| no videos are available}";
+	/*cout << "Argument 0: " << argv[0] << endl;
+	cout << "Argument 1: "<<argv[1] << endl;
 
-	int j = 0;
-	CommandLineParser parser(argc, argv,keys);
-	string filename = parser.get<string>(j);
+	app.getVideoPaths(argv[1]);
+	*/
+	string keys =
+		"{@video|x.mov|input video}";
+
+	/*for (int i = 0; i < argc; i++) {
+		
+	}*/
+
+	keys.insert(0, "{@video" + std::to_string(1) + "|y.mov|input video}");
+	keys.insert(0, "{@video" + std::to_string(2) + "|z.mov|input video}");
+
+	int countVideos=0;
+	CommandLineParser parser(argc, argv, keys);
+	string filename = parser.get<string>(countVideos);
 	
+	app.createNewFile("video1.txt");
+
 	printf("fileName: %s\n", filename.c_str());
 	VideoCapture capture(filename);
+	Mat frame;
 
 	for (int i = 0; i < capture.get(CAP_PROP_FRAME_COUNT);i++) {
-		Mat frame;
-		capture >> app.matImg;
-		frame = app.matImg;
+		capture >> app.matImgG;
+		frame = app.matImgG;
+		app.matImgB = frame;
+
+		app.insertFramesIntoVector(frame);
 		imshow(app.getWinName(), frame);
+
 		app.framesCount = capture.get(CAP_PROP_POS_FRAMES);
-		printf("number of the frame: %.0f\n", app.framesCount);
-		app.drawExistedTargets(app.matImg);
-		if (waitKey(30) == 's') {
-			app.wait = (char)waitKey(30000);
-		}
-		if (waitKey(30) == 'f') {
-			app.wait = (char)waitKey(3000);
-		}
-		if (waitKey(30) == 27) {
-			break;
-		}
+		app.drawExistedTargets(app.matImgB);
+
 		if (capture.get(CAP_PROP_FRAME_COUNT) == i+1) {
-			j++;
-			filename = parser.get<string>(j);//если больше нет file, то break
+			countVideos++;
+			filename = parser.get<string>(countVideos);//берем следующее видео
+			printf("fileName: %s\n", filename.c_str());
+			app.createNewFile(filename.c_str());//создаем новый файл для точек
 			capture.open(filename);
 			i = 0;
 		}
+		char c = waitKey(30);
+		
+		if (c > 0) {
+			if (c == 27) {
+				break;
+			}
+			if ('s' == c) {
+				waitKey(30000);
+			}
+			if ('f' == c) {
+				waitKey(30);
+			}
+			if ('1' == c) {
+				if (app.framesCount != 1) {
+					imshow(app.getWinName(), app.framesVideo[app.framesCount - 1]);
+					app.framesCount = app.framesCount - 1;
+					waitKey(30000);
+				}
+			}
+			if ('2' == c) {
+				if (app.framesVideo[app.framesCount].rows != 0)
+				{
+					imshow(app.getWinName(), app.framesVideo[app.framesCount]);
+					app.framesCount = app.framesCount + 1;
+					waitKey(300000);
+				}
+			}
+		}
+		
 	}
 
 	capture.release();
-	destroyAllWindows();
-	//app.file.close();
+	cv::destroyAllWindows();
 	return 0;
 }
 
-void Annotator::drawTarget(const Mat & img, int x, int y, int radius)
+Annotator::Annotator()
+	:circleRadius(10),
+	delRadius(35),
+	configFile("config.txt",ios_base::app),
+	configFileR("config.txt", ios_base::in),
+	coordMass(2),
+	filePaths(1),
+	framesVideo(2),
+	framesCount(0.0),
+	matImgG(100, 100),
+	matImgB(100, 100),
+	windowName("target video"),
+	wait((char)waitKey(30000))
 {
-	circle(img, Point(x, y), radius, Scalar(74, 92, 255), 2, 8);
-	line(img, Point(x - radius / 2, y - radius / 2), cvPoint(x + radius / 2, y + radius / 2), Scalar(74, 92, 255), 2, 8);
-	line(img, Point(x - radius / 2, y + radius / 2), cvPoint(x + radius / 2, y - radius / 2), Scalar(74, 92, 255), 2, 8);
+	namedWindow(windowName, 1);
+	setMouseCallback(windowName, mouseCallback, this);
+}
+
+void Annotator::drawTarget(const Mat& img, int x, int y, int radius)
+{
+	circle(matImgB, Point(x, y), radius, Scalar(74, 92, 255), 2, 8);
+	line(matImgB, Point(x - radius / 2, y - radius / 2), cvPoint(x + radius / 2, y + radius / 2), Scalar(74, 92, 255), 2, 8);
+	line(matImgB, Point(x - radius / 2, y + radius / 2), cvPoint(x + radius / 2, y - radius / 2), Scalar(74, 92, 255), 2, 8);
 	printf("%d x %d\n", x, y);
 	file << framesCount << " : " << x << " ; " << y << endl;
 	coordMass.insert(coordMass.begin(), x);
 	coordMass.insert(coordMass.begin() + 1, y);
 	coordMass.insert(coordMass.begin() + 2, framesCount);
-	Mat imagewithDraws(img.clone());
-	imshow(windowName, imagewithDraws);
+	imshow(windowName, matImgB);
 }
 
-void Annotator::deleteTarget(const Mat & img, int x, int y, int radius)
+void Annotator::deleteTarget(const Mat& img, int x, int y, int radius)
 {
-	rectangle(img, Point(x - 30, y + 30), Point(x + 30, y - 30), (0, 255, 0), 3);
+	int xCoord, yCoord;
 	for (int i = 0; i < coordMass.size() - 2; i++) {
-		int xCoord = abs(x - coordMass[i]);
-		int yCoord = abs(coordMass[i + 1] - y);
-		if (pow((pow(xCoord, 2) + pow(yCoord, 2)), 0.5) <= 30 && framesCount == coordMass[i + 2]) {
+		xCoord = abs(x - coordMass[i]);
+		yCoord = abs(coordMass[i + 1] - y);
+		if (pow((pow(xCoord, 2) + pow(yCoord, 2)), 0.5) <= delRadius && framesCount == coordMass[i + 2]) {
 			printf("The target with coordinates %d x %d  was deleted\n", coordMass[i], coordMass[i + 1]);
 			file << framesCount << " ! " << coordMass[i] << " ; " << coordMass[i + 1] << endl;
 			coordMass.erase(coordMass.begin() + i);
@@ -151,30 +238,40 @@ void Annotator::deleteTarget(const Mat & img, int x, int y, int radius)
 		}
 		i++;
 	}
-	Mat imagewithDraws(img.clone());
-	imshow(windowName, imagewithDraws);
+	
+	drawExistedTargets(img);
 }
 
-void Annotator::drawExistedTargets(const Mat & img)
+void Annotator::drawExistedTargets(const Mat& img)
 {
 	int radius = circleRadius;
-	for (int i = 0; i < coordMass.size() - 2; i++) {
-		if (framesCount == coordMass[i + 2]) {
-			int x = coordMass[i];
-			int y = coordMass[i + 1];
-			circle(img, Point(x, y), radius, Scalar(74, 92, 255), 2, 8);
-			line(img, Point(x - radius / 2, y - radius / 2), cvPoint(x + radius / 2, y + radius / 2), Scalar(74, 92, 255), 2, 8);
-			line(img, Point(x - radius / 2, y + radius / 2), cvPoint(x + radius / 2, y - radius / 2), Scalar(74, 92, 255), 2, 8);
-			printf("%d x %d\n", x, y);
-			i = i + 3;
+	int x, y,j=0;
+	Mat imagewithDraws(img.clone());
+	for (j = 0; j < coordMass.size() - 2; j++) {
+		if (framesCount == coordMass[j + 2]) {
+		    x = coordMass[j];
+			y = coordMass[j + 1];
+			circle(imagewithDraws, Point(x, y), radius, Scalar(74, 92, 255), 2, 8);
+			line(imagewithDraws, Point(x - radius / 2, y - radius / 2), cvPoint(x + radius / 2, y + radius / 2), Scalar(74, 92, 255), 2, 8);
+			line(imagewithDraws, Point(x - radius / 2, y + radius / 2), cvPoint(x + radius / 2, y - radius / 2), Scalar(74, 92, 255), 2, 8);
+			j = j +2;
 		}
-		Mat imagewithDraws(img.clone());
-		imshow(windowName, imagewithDraws);
 	}
+	matImgB = imagewithDraws.clone();
+	imshow(windowName, imagewithDraws);
 }
 
 string Annotator::getWinName() {
 	return this->windowName;
+}
+
+void Annotator::createNewFile(string name)
+{
+	file.close();
+	rFile.close();
+	file.open(name, ios_base::app);
+	rFile.open(name, ios_base::in);
+	printf("file with %s was created", name.c_str());
 }
 
 void Annotator::checkCoordinatesInFile()
@@ -209,3 +306,38 @@ void Annotator::checkCoordinatesInFile()
 	}
 	rFile.close();
 }
+
+void Annotator::insertFramesIntoVector(Mat & img)
+{
+	Mat img2 = img.clone();
+	framesVideo.insert(framesVideo.begin()+framesCount, img2);
+}
+
+void Annotator::readSettingsFromConfig()
+{
+	string s;
+	string cR("circleRadius ");
+	string dR("delRadius ");
+			
+	if (configFileR.peek() == EOF) {
+		configFile << cR << circleRadius << endl;
+		configFile << dR << delRadius;
+	}
+	
+	while (!configFileR.eof()) {
+		configFileR >> cR >> circleRadius;
+		configFileR >> dR >> delRadius;
+		getline(configFileR, s, '\n');
+	}
+	printf("CircleRadius : %d\n", delRadius);
+	printf("DeleteRadius : %d\n", delRadius);
+	configFile.close();
+	configFileR.close();
+}
+
+void Annotator::getVideoPaths(string pathToFile)
+{
+	ifstream filePaths;
+	filePaths.open(pathToFile, ios_base::in);
+}
+
