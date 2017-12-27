@@ -34,6 +34,8 @@ public:
 	char wait;
 	std::vector<string> filePaths;
 	vector<Mat> framesVideo;
+	ofstream file;
+	ifstream rFile;
 
 private:
 	static void mouseCallback(int event, int x, int y, int, void* param)
@@ -55,7 +57,8 @@ private:
 			{
 				app.deleteTarget(app.matImgG, x, y, app.delRadius);
 			}
-
+			case CV_EVENT_RBUTTONUP:
+				break;
 			default:
 				break;
 			}
@@ -63,8 +66,6 @@ private:
 	}
 private:
 	String windowName;
-	ofstream file;
-	ifstream rFile;
 	ofstream configFile;
 	ifstream configFileR;
 	std::vector<int> coordMass;
@@ -82,7 +83,7 @@ int main(int argc, const char* argv[]) {
 	string filename = parser.get<string>(countVideos);
 	std::size_t found = filename.find_last_of("/\\");
 	string name = filename.substr(found + 1);
-	
+	app.rFile.open(name+".txt");
 	app.checkCoordinatesInFile();
 	app.createNewFile(name+".txt");
 
@@ -96,25 +97,27 @@ int main(int argc, const char* argv[]) {
 		frame = app.matImgG;
 		app.matImgB = frame;
 
-		app.insertFramesIntoVector(frame);
-		imshow(app.getWinName(), frame);
-
-		app.drawExistedTargets(app.matImgB);
-
 		if (capture.get(CAP_PROP_FRAME_COUNT) == i+1) {
 			countVideos++;
 			if (app.countVideosNumber <= countVideos) break;
 			else {
-				filename = parser.get<string>(countVideos);//берем следующее видео
+				filename = parser.get<string>(countVideos);
 				found = filename.find_last_of("/\\");
 				name = filename.substr(found + 1);
 				printf("fileName: %s\n", name.c_str());
+				app.rFile.close();
+				app.rFile.open(name + ".txt");
+				app.checkCoordinatesInFile();
 				app.createNewFile(name + ".txt");
 				capture.open(filename);
 				i = 0;
 			}
 		}
-		
+
+		app.insertFramesIntoVector(frame);
+		//imshow(app.getWinName(), frame);
+		app.drawExistedTargets(frame);
+
 		if (c2 > 0) {
 			c = c2;
 			c2 = 0;
@@ -126,25 +129,29 @@ int main(int argc, const char* argv[]) {
 				break;
 			}
 			if ('s' == c) {
-				c2 = waitKey(300000);
-			}
-			if ('f' == c) {
-				c2 = waitKey(30);
+				while (c2 == 0) {
+					c2 = waitKey(0);
+				}
 			}
 			if ('1' == c) {
-				if (app.framesCount != 1) {
-					app.drawExistedTargets(app.framesVideo[app.framesCount - 1]);
-					app.framesCount = app.framesCount - 1;
-					c2 = waitKey(30000);
+					if (app.framesCount != 1) {
+						app.framesCount = app.framesCount - 1;
+						app.drawExistedTargets(app.framesVideo[app.framesCount]);
+					}
+					while (c2 == 0) {
+						c2 = waitKey(0);
+					}
 				}
-			}
+
 			if ('2' == c) {
-				if (app.framesVideo[app.framesCount].rows != 0)
-				{
-					imshow(app.getWinName(), app.framesVideo[app.framesCount]);
-					app.framesCount = app.framesCount + 1;
-					c2 = waitKey(30000);
-				}
+					if (app.framesVideo[app.framesCount+2].rows != 0)
+					{
+					app.framesCount = app.framesCount + 2;
+					app.drawExistedTargets(app.framesVideo[app.framesCount]);
+					}
+					while (c2 == 0) {
+						c2 = waitKey(0);
+				}	
 			}
 		}
 		if(c<0) app.framesCount = capture.get(CAP_PROP_POS_FRAMES);
@@ -203,7 +210,6 @@ void Annotator::deleteTarget(const Mat& img, int x, int y, int radius)
 		}
 		i++;
 	}
-	
 	drawExistedTargets(img);
 }
 
